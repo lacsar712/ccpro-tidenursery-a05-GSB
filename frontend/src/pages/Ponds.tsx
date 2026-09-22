@@ -138,6 +138,7 @@ export default function Ponds() {
               <th>品种</th>
               <th>体积 m³</th>
               <th>状态</th>
+              <th>溶氧校准</th>
               <th />
             </tr>
           </thead>
@@ -151,6 +152,11 @@ export default function Ponds() {
                 <td>{r.volumeM3}</td>
                 <td>
                   <span className={`badge ${r.status}`}>{r.status}</span>
+                </td>
+                <td>
+                  <span className={`badge ${r.calibrationValid ? 'stocked' : 'quarantine'}`}>
+                    {r.calibrationValid ? '校准有效' : '校准失效'}
+                  </span>
                 </td>
                 <td>
                   <button className="btn ghost" onClick={() => remove(r.id)}>

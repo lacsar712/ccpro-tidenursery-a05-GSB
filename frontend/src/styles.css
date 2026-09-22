@@ -225,7 +225,7 @@ th {
 
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
   margin-top: 20px;
 }
@@ -276,6 +276,16 @@ th {
 .badge.stocked {
   background: #e3f7f4;
   color: #1a7a6c;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.hint-bad {
+  color: var(--warn);
+  font-weight: 600;
 }
 
 .login-page {

@@ -9,6 +9,7 @@ from app.models.pond import Pond
 from app.models.user import User
 from app.models.water_sample import WaterSample
 from app.schemas.water_sample import WaterSampleCreate, WaterSampleOut
+from app.services.calibration import is_calibration_valid, latest_calibration
 
 router = APIRouter(prefix="/api/water-samples", tags=["water-samples"])
 
@@ -34,6 +35,23 @@ def create_sample(
     pond = db.query(Pond).filter(Pond.id == payload.pond_id).first()
     if not pond:
         raise HTTPException(status_code=400, detail="塘口不存在")
+
+    latest = latest_calibration(db, payload.pond_id)
+    if not is_calibration_valid(latest):
+        if latest is None:
+            detail = (
+                f"塘口 {pond.pond_code} 无溶氧探头校准票，"
+                "禁止新建水质样，请先完成校准"
+            )
+        else:
+            detail = (
+                f"塘口 {pond.pond_code} 的溶氧校准已失效"
+                f"（最近校准票 #{latest.id}，校准时刻 "
+                f"{latest.calibrated_at:%Y-%m-%d %H:%M}，"
+                f"有效期 {latest.valid_hours} 小时），禁止新建水质样，请重新校准"
+            )
+        raise HTTPException(status_code=409, detail=detail)
+
     item = WaterSample(
         pond_id=payload.pond_id,
         sampled_at=payload.sampled_at,

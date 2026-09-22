@@ -73,13 +73,24 @@ export default function WaterSamples() {
     return p ? `${p.pondCode} (${p.species})` : `#${id}`
   }
 
+  const selectedPond = ponds.find((x) => x.id === form.pondId)
+
   return (
     <div>
       <header className="page-header">
         <h1>水质采样</h1>
-        <p className="muted">校验：溶解氧 doMgL &gt; 0，pH ∈ [6, 9]</p>
+        <p className="muted">
+          校验：溶解氧 doMgL &gt; 0，pH ∈ [6, 9]；塘口须持有效溶氧校准票，否则禁止登记（409）。
+        </p>
       </header>
       {error && <div className="error">{error}</div>}
+
+      {selectedPond && !selectedPond.calibrationValid && (
+        <div className="error">
+          塘口 {selectedPond.pondCode}（{selectedPond.species}）无有效溶氧校准，
+          请先到「溶氧校准」开具校准票，否则服务端将拒绝采样（409）。
+        </div>
+      )}
 
       <form className="panel form-grid" onSubmit={onSubmit}>
         <label>
@@ -92,6 +103,7 @@ export default function WaterSamples() {
             {ponds.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.pondCode} · {p.species}
+                {p.calibrationValid ? '' : '（校准失效·禁采）'}
               </option>
             ))}
           </select>
@@ -152,7 +164,12 @@ export default function WaterSamples() {
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
           />
         </label>
-        <button type="submit" className="btn primary">
+        <button
+          type="submit"
+          className="btn primary"
+          disabled={!selectedPond || !selectedPond.calibrationValid}
+          title={selectedPond && !selectedPond.calibrationValid ? '该塘口无有效校准票' : ''}
+        >
           登记水质样
         </button>
       </form>

@@ -46,11 +46,20 @@ docker compose up --build
 3. **Pond 育苗塘**：`hatcheryId`、`pondCode`、`species`、`volumeM3`、`status(stocked|dry|quarantine)`；同场 `pondCode` 唯一
 4. **WaterSample 水质样**：`pondId`、`sampledAt`、`tempC`、`salinityPpt`、`doMgL`、`ph`、`notes`；`doMgL > 0` 且 `ph ∈ [6,9]`，否则返回 **400**
 5. **FeedEvent 投喂**：`pondId`、`fedAt`、`feedType`、`amountKg`、`operatorName`
-6. **Dashboard**：塘总数、quarantine 数、近 24h 采样数、近 7 日投喂总量 kg
+6. **DoCalibration 溶氧探头校准票**：`pondId`、`calibratedAt`、`standardReading`、`deviceReading`、`validHours`（正整数）、`operatorName`
+   - 实机读数与标准液读数绝对差 **> 0.5 mg/L → 400**，校准票创建失败
+   - 有效性只看时间窗：自该塘**最近一张校准票**的校准时刻起 `validHours` 小时内（含端点）为有效；无票 / 过期均为失效；作废口径即删除记录本身
+   - **无有效校准时新建水质样 → 409**，中文错误信息带最近票号（如 `#12`）或写明该塘无票；重新开具有效票后自动恢复采样，过期后自动恢复拦截
+   - 塘口列表每行返回 `calibrationValid`
+7. **Dashboard**：塘总数、quarantine 数、**溶氧校准失效塘数**（与塘口列表失效行数同一口径）、近 24h 采样数、近 7 日投喂总量 kg
 
 ## 前端页面
 
-Login · Dashboard · Hatcheries · Ponds · WaterSamples · FeedEvents
+Login · Dashboard · Hatcheries · Ponds · WaterSamples · DoCalibrations（侧栏「溶氧校准」）· FeedEvents
+
+- 塘口列表带「校准有效 / 校准失效」标记
+- 水质采样页对失效塘红字提示并禁用提交按钮；最终闸门仍在服务端（绕过前端直调 API 同样 409）
+- 种子数据中 B-02 塘无校准票，看板与列表均显示 1 个失效塘
 
 ## 本地开发（可选）
 

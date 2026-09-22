@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from app.auth import hash_password
 from app.database import SessionLocal
+from app.models.do_calibration import DoCalibration
 from app.models.feed_event import FeedEvent
 from app.models.hatchery import Hatchery
 from app.models.pond import Pond
@@ -79,6 +80,31 @@ def seed() -> None:
             now = datetime.now(timezone.utc)
             db.add_all(
                 [
+                    # p1/p2/p3 持有效溶氧校准票；p4(B-02) 无票，校准失效。
+                    DoCalibration(
+                        pond_id=p1.id,
+                        calibrated_at=now - timedelta(hours=2),
+                        standard_reading=6.8,
+                        device_reading=6.9,
+                        valid_hours=720,
+                        operator_name="水质技术员",
+                    ),
+                    DoCalibration(
+                        pond_id=p2.id,
+                        calibrated_at=now - timedelta(hours=20),
+                        standard_reading=5.5,
+                        device_reading=5.4,
+                        valid_hours=48,
+                        operator_name="水质技术员",
+                    ),
+                    DoCalibration(
+                        pond_id=p3.id,
+                        calibrated_at=now - timedelta(hours=6),
+                        standard_reading=7.0,
+                        device_reading=7.0,
+                        valid_hours=168,
+                        operator_name="场长",
+                    ),
                     WaterSample(
                         pond_id=p1.id,
                         sampled_at=now - timedelta(hours=3),
