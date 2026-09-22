@@ -64,7 +64,9 @@ export default function Ponds() {
     <div>
       <header className="page-header">
         <h1>育苗塘</h1>
-        <p className="muted">同场塘口号唯一；状态：stocked / dry / quarantine</p>
+        <p className="muted">
+          同场塘口号唯一；状态：stocked / dry / quarantine；溶氧校准失效的塘口禁止新建水质样
+        </p>
       </header>
       {error && <div className="error">{error}</div>}
 
@@ -138,6 +140,7 @@ export default function Ponds() {
               <th>品种</th>
               <th>体积 m³</th>
               <th>状态</th>
+              <th>溶氧校准</th>
               <th />
             </tr>
           </thead>
@@ -151,6 +154,13 @@ export default function Ponds() {
                 <td>{r.volumeM3}</td>
                 <td>
                   <span className={`badge ${r.status}`}>{r.status}</span>
+                </td>
+                <td>
+                  {r.calibrationValid ? (
+                    <span className="badge cal-ok">校准有效</span>
+                  ) : (
+                    <span className="badge cal-bad">校准失效</span>
+                  )}
                 </td>
                 <td>
                   <button className="btn ghost" onClick={() => remove(r.id)}>

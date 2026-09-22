@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from app.auth import hash_password
 from app.database import SessionLocal
+from app.models.do_calibration import DoCalibration
 from app.models.feed_event import FeedEvent
 from app.models.hatchery import Hatchery
 from app.models.pond import Pond
@@ -77,6 +78,44 @@ def seed() -> None:
             db.flush()
 
             now = datetime.now(timezone.utc)
+            # 溶氧探头校准票：A-01/A-02/B-02 在有效期内，B-01 无任何校准票（种子中恰好一塘无有效票）。
+            # A-02 另留一张已过期的历史票，演示“只以最近一张票的时间窗为准”。
+            db.add_all(
+                [
+                    DoCalibration(
+                        pond_id=p1.id,
+                        calibrated_at=now - timedelta(hours=12),
+                        standard_reading=6.80,
+                        device_reading=6.85,
+                        valid_hours=720,
+                        calibrator="水质技术员",
+                    ),
+                    DoCalibration(
+                        pond_id=p2.id,
+                        calibrated_at=now - timedelta(days=20),
+                        standard_reading=6.70,
+                        device_reading=6.95,
+                        valid_hours=168,
+                        calibrator="场长",
+                    ),
+                    DoCalibration(
+                        pond_id=p2.id,
+                        calibrated_at=now - timedelta(days=2),
+                        standard_reading=6.80,
+                        device_reading=6.90,
+                        valid_hours=168,
+                        calibrator="水质技术员",
+                    ),
+                    DoCalibration(
+                        pond_id=p4.id,
+                        calibrated_at=now - timedelta(hours=2),
+                        standard_reading=6.80,
+                        device_reading=6.75,
+                        valid_hours=720,
+                        calibrator="场长",
+                    ),
+                ]
+            )
             db.add_all(
                 [
                     WaterSample(

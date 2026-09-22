@@ -19,6 +19,17 @@ export type Pond = {
   species: string
   volumeM3: number
   status: 'stocked' | 'dry' | 'quarantine'
+  calibrationValid: boolean
+}
+
+export type DoCalibration = {
+  id: number
+  pondId: number
+  calibratedAt: string
+  standardReading: number
+  deviceReading: number
+  validHours: number
+  calibrator: string
 }
 
 export type WaterSample = {
@@ -46,4 +57,5 @@ export type DashboardStats = {
   quarantineCount: number
   samplesLast24h: number
   feedKgLast7d: number
+  calibrationInvalidCount: number
 }

@@ -73,11 +73,16 @@ export default function WaterSamples() {
     return p ? `${p.pondCode} (${p.species})` : `#${id}`
   }
 
+  const selectedPond = ponds.find((p) => p.id === form.pondId)
+  const selectedValid = selectedPond?.calibrationValid ?? false
+
   return (
     <div>
       <header className="page-header">
         <h1>水质采样</h1>
-        <p className="muted">校验：溶解氧 doMgL &gt; 0，pH ∈ [6, 9]</p>
+        <p className="muted">
+          校验：溶解氧 doMgL &gt; 0，pH ∈ [6, 9]；塘口须在溶氧探头校准有效期内，否则服务端拒绝（409）
+        </p>
       </header>
       {error && <div className="error">{error}</div>}
 
@@ -92,9 +97,21 @@ export default function WaterSamples() {
             {ponds.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.pondCode} · {p.species}
+                {p.calibrationValid ? '' : '（溶氧校准失效）'}
               </option>
             ))}
           </select>
+          {selectedPond && (
+            <span className="hint">
+              {selectedValid ? (
+                <span className="badge cal-ok">校准有效，可采样</span>
+              ) : (
+                <span className="badge cal-bad">
+                  校准失效/无有效票，该塘口采样将被拒绝（409）
+                </span>
+              )}
+            </span>
+          )}
         </label>
         <label>
           采样时间

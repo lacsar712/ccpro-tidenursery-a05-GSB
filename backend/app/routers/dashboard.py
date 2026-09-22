@@ -11,6 +11,7 @@ from app.models.pond import Pond
 from app.models.user import User
 from app.models.water_sample import WaterSample
 from app.schemas.dashboard import DashboardStats
+from app.services.calibration import get_validity_map
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -21,7 +22,12 @@ def get_stats(
     _: User = Depends(get_current_user),
 ):
     now = datetime.now(timezone.utc)
-    pond_total = db.query(func.count(Pond.id)).scalar() or 0
+    all_ponds = db.query(Pond.id).order_by(Pond.id).all()
+    pond_ids = [row[0] for row in all_ponds]
+    pond_total = len(pond_ids)
+    # 与塘口列表同源：同一时间窗函数逐塘判定，失效行数即本计数
+    validity = get_validity_map(db, pond_ids, now)
+    calibration_invalid_count = sum(1 for valid in validity.values() if not valid)
     quarantine_count = (
         db.query(func.count(Pond.id)).filter(Pond.status == "quarantine").scalar() or 0
     )
@@ -42,4 +48,5 @@ def get_stats(
         quarantine_count=quarantine_count,
         samples_last_24h=samples_last_24h,
         feed_kg_last_7d=float(feed_kg_last_7d),
+        calibration_invalid_count=calibration_invalid_count,
     )

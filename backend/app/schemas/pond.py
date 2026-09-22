@@ -34,3 +34,4 @@ class PondOut(BaseModel):
     species: str
     volume_m3: float = Field(serialization_alias="volumeM3")
     status: PondStatus
+    calibration_valid: bool = Field(serialization_alias="calibrationValid")

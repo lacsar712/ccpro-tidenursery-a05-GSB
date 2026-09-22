@@ -24,3 +24,6 @@ class Pond(Base):
     feed_events: Mapped[List["FeedEvent"]] = relationship(
         "FeedEvent", back_populates="pond", cascade="all, delete-orphan"
     )
+    do_calibrations: Mapped[List["DoCalibration"]] = relationship(
+        "DoCalibration", back_populates="pond", cascade="all, delete-orphan"
+    )

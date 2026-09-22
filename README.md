@@ -46,11 +46,22 @@ docker compose up --build
 3. **Pond 育苗塘**：`hatcheryId`、`pondCode`、`species`、`volumeM3`、`status(stocked|dry|quarantine)`；同场 `pondCode` 唯一
 4. **WaterSample 水质样**：`pondId`、`sampledAt`、`tempC`、`salinityPpt`、`doMgL`、`ph`、`notes`；`doMgL > 0` 且 `ph ∈ [6,9]`，否则返回 **400**
 5. **FeedEvent 投喂**：`pondId`、`fedAt`、`feedType`、`amountKg`、`operatorName`
-6. **Dashboard**：塘总数、quarantine 数、近 24h 采样数、近 7 日投喂总量 kg
+6. **DoCalibration 溶氧探头校准票**：`pondId`、`calibratedAt`、`standardReading`（标准液读数）、`deviceReading`（实机读数）、`validHours`（有效小时数，正整数）、`calibrator`（校准人）
+   - 实机读数与标准液读数绝对差 **> 0.5** 时建票失败，返回 **400**
+   - 有效性口径（删除或作废以外，唯一以时间窗函数判定）：取塘口**最近一张**校准票，当前时刻落在 `[校准时刻, 校准时刻 + 有效小时数]` 之内即为有效；无票 / 校准时刻在未来 / 超窗均视为失效
+   - 新建水质样前强制校验：无有效校准返回 **409**，中文提示带最近票编号（如“最近校准票 #12 已过有效期”）或写明“无溶氧探头校准票”；校准过期后自动恢复拦截，无需改标记
+7. **Dashboard**：塘总数、quarantine 数、**溶氧校准失效塘数**、近 24h 采样数、近 7 日投喂总量 kg；失效塘数与塘口列表“校准失效”行数同源一致
 
 ## 前端页面
 
-Login · Dashboard · Hatcheries · Ponds · WaterSamples · FeedEvents
+Login · Dashboard · Hatcheries · Ponds · WaterSamples · FeedEvents · DoCalibrations（侧栏「溶氧校准」）
+
+- 塘口列表每行带「溶氧校准」有效/失效标记
+- 水质样页选择塘口后显示该校准状态；拦截由服务端强制执行，前端标记仅为提示（绕过前端直接调用 API 同样返回 409）
+
+## 种子数据
+
+初始 4 个塘口中 **B-01 无任何溶氧校准票**（即唯一无有效校准的塘口，对其新建水质样返回 409）；A-02 除一张在有效期内的票外另附一张已过期历史票，用于演示“仅以最近一张票的时间窗为准”。
 
 ## 本地开发（可选）
 
